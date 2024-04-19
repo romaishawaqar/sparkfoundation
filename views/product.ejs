@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8" />
+    <title>Razorpay Payment-Integration</title>
+	<h1>Razorpay Payment-Integration</h1>
+	<h2>Select items to buy</h2>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.4/jquery.min.js"></script>
+    <link rel="stylesheet" type="text/css" href="styles.css">
+</head>
+
+<body>
+    <hr />
+
+    <div class="item-container">
+        <img src="https://5.imimg.com/data5/SELLER/Default/2022/8/BC/IT/RJ/18451800/traditional-look-soft-silk-saree-with-blouse.jpeg" alt="" width="150px" height="150px">
+        <p>Saree</p>
+        <p><b>Amount:- Rs. 5500</b></p>
+        <form class="pay-form">
+            <input type="hidden" name="name" value="Saree">
+            <input type="hidden" name="amount" value="5500">
+            <input type="hidden" name="description" value="Saree Buying">
+            <input class="pay-button" type="submit" value="Pay Now">
+        </form>
+    </div>
+
+    <div class="item-container">
+        <img src="https://cdn.pixabay.com/photo/2013/07/12/18/20/shoes-153310_960_720.png" alt="" width="150px" height="150px">
+        <p>Shoes</p>
+        <p><b>Amount:- Rs. 1500</b></p>
+        <form class="pay-form">
+            <input type="hidden" name="name" value="Shoes">
+            <input type="hidden" name="amount" value="1500">
+            <input type="hidden" name="description" value="Shoes Buying">
+            <input class="pay-button" type="submit" value="Pay Now">
+        </form>
+    </div>
+
+</body>
+
+</html>
+
+
+<!--Inside index.html -->
+<script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+<script>
+
+$(document).ready(function(){
+	$('.pay-form').submit(function(e){
+		e.preventDefault();
+
+		var formData = $(this).serialize();
+
+		$.ajax({
+			url:"/createOrder",
+			type:"POST",
+			data: formData,
+			success:function(res){
+				if(res.success){
+					var options = {
+						"key": ""+res.key_id+"",
+						"amount": ""+res.amount+"",
+						"currency": "INR",
+						"name": ""+res.product_name+"",
+						"description": ""+res.description+"",
+						"image": "https://dummyimage.com/600x400/000/fff",
+						"order_id": ""+res.order_id+"",
+						"handler": function (response){
+							alert("Payment Succeeded");
+							// window.open("/","_self")
+						},
+						"prefill": {
+							"contact":""+res.contact+"",
+							"name": ""+res.name+"",
+							"email": ""+res.email+""
+						},
+						"notes" : {
+							"description":""+res.description+""
+						},
+						"theme": {
+							"color": "#2300a3"
+						}
+					};
+					var razorpayObject = new Razorpay(options);
+					razorpayObject.on('payment.failed', function (response){
+							alert("Payment Failed");
+					});
+					razorpayObject.open();
+				}
+				else{
+					alert(res.msg);
+				}
+			}
+		})
+
+	});
+});
+
+</script>
